@@ -2,7 +2,7 @@
 //  SceneDelegate.swift
 //  Wordle
 //
-//  Created by yupana on 3/8/22.
+//  Created by Volkan Kuday on 3/8/22.
 //
 
 import UIKit
