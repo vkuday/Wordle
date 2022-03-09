@@ -44,9 +44,9 @@ class ViewController: UIViewController {
             boardVC.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             boardVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             boardVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            boardVC.view.bottomAnchor.constraint(equalTo: keyboardVC.view.topAnchor),
             boardVC.view.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.6),
             
-            keyboardVC.view.topAnchor.constraint(equalTo: boardVC.view.topAnchor),
             keyboardVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             keyboardVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             keyboardVC.view.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
