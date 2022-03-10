@@ -7,12 +7,16 @@
 
 import UIKit
 
+protocol BoardViewControllerDatasource: AnyObject {
+    var currentGuesses: [[Character?]] { get }
+    func boxColor(at indexPath: IndexPath) -> UIColor?
+}
+
 class BoardViewController: UIViewController, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource, UICollectionViewDelegate {
     
-    let letters = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
-    private var keys: [[Character]] = []
+    weak var datasource: BoardViewControllerDatasource?
     
-    let collectionView: UICollectionView = {
+    private let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.minimumInteritemSpacing = 2
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -29,60 +33,55 @@ class BoardViewController: UIViewController, UICollectionViewDelegateFlowLayout,
         view.addSubview(collectionView)
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 30),
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30)
         ])
-        
-        for row in letters {
-            let chars = Array(row)
-            keys.append(chars)
-        }
+    }
+    
+    public func reloadData() {
+        collectionView.reloadData()
     }
 }
 
 extension BoardViewController {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return keys.count
+        return datasource?.currentGuesses.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return keys[section].count
+        let guesses = datasource?.currentGuesses ?? []
+        return guesses[section].count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: KeyCell.identifier, for: indexPath) as? KeyCell else {
             fatalError()
         }
-        let letter = keys[indexPath.section][indexPath.row]
-        cell.configure(with: letter)
+        cell.backgroundColor = datasource?.boxColor(at: indexPath)
+        cell.layer.borderWidth = 1
+        cell.layer.borderColor = UIColor.systemGray3.cgColor
+        
+        let guesses = datasource?.currentGuesses ?? []
+        if let letter = guesses[indexPath.section][indexPath.row] {
+            cell.configure(with: letter)
+        }
+        
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
         let margin: CGFloat = 20
-        let size: CGFloat = (collectionView.frame.size.width - margin) / 10
+        let size: CGFloat = (collectionView.frame.size.width - margin) / 5
         
-        return CGSize(width: size, height: size * 1.5)
+        return CGSize(width: size, height: size)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         
-        var left: CGFloat = 1
-        var right: CGFloat = 1
-        
-        let margin: CGFloat = 20
-        let size: CGFloat = (collectionView.frame.size.width - margin) / 10
-        let count: CGFloat = CGFloat(collectionView.numberOfItems(inSection: section))
-        
-        let inset: CGFloat = (collectionView.frame.size.width - (size * count) - (2 * count)) / 2
-        
-        left = inset
-        right = inset
-        
-        return UIEdgeInsets(top: 2, left: left, bottom: 2, right: right)
+        return UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {

@@ -14,12 +14,18 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    let answers = ["basur", "bulut", "moruk", "yalak"]
+    
+    var answer = ""
+    private var guesses: [[Character?]] = Array(repeating: Array(repeating: nil, count: 5), count: 6)
+
+    
     let keyboardVC = KeyboardViewController()
     let boardVC = BoardViewController()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        answer = answers.randomElement() ?? "basur"
         view.backgroundColor = .systemGray6
         addChildren()
     }
@@ -27,11 +33,13 @@ class ViewController: UIViewController {
     private func addChildren() {
         addChild(keyboardVC)
         keyboardVC.didMove(toParent: self)
+        keyboardVC.delegate = self
         keyboardVC.view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(keyboardVC.view)
         
         addChild(boardVC)
         boardVC.didMove(toParent: self)
+        boardVC.datasource = self
         boardVC.view.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(boardVC.view)
         
@@ -52,7 +60,56 @@ class ViewController: UIViewController {
             keyboardVC.view.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
+}
 
+extension ViewController: KeyboardViewControllerDelegate {
+    
+    func keyboardViewController(_ vc: KeyboardViewController, didTapKey letter: Character) {
+        
+        var stop = false
+        
+        for i in 0..<guesses.count {
+            for j in 0..<guesses[i].count {
+                if guesses[i][j] == nil {
+                    guesses[i][j] = letter
+                    stop = true
+                    break
+                }
+            }
+            
+            if stop {
+                break
+            }
+        }
+        
+        boardVC.reloadData()
+    }
+}
 
+extension ViewController: BoardViewControllerDatasource {
+    
+    var currentGuesses: [[Character?]] {
+        return guesses
+    }
+    
+    func boxColor(at indexPath: IndexPath) -> UIColor? {
+        let rowIndex = indexPath.section
+        
+        let count = guesses[rowIndex].compactMap({ $0 }).count
+        guard count == 5 else {
+             return nil
+        }
+        
+        let indexedAnswer = Array(answer)
+        guard let letter = guesses[indexPath.section][indexPath.row], indexedAnswer.contains(letter) else {
+            return nil
+        }
+
+        if indexedAnswer[indexPath.row] == letter {
+            return .systemGreen
+        }
+        
+        return .systemOrange
+    }
 }
 
